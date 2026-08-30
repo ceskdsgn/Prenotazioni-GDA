@@ -62,7 +62,7 @@
 
   --nav-h:  64px;
   --safe-t: env(safe-area-inset-top, 0px);
-  --safe-b: env(safe-area-inset-bottom, 20px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
   --ease:   cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -748,7 +748,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   transition: transform .30s var(--ease);
-  padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 16px);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
   box-shadow: var(--sh-l);
 }
 
