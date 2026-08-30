@@ -60,7 +60,7 @@
   --r-xxl: 28px;
   --r-f:   999px;
 
-  --nav-h:  64px;
+  --nav-h:  90px;
   --safe-b: env(safe-area-inset-bottom, 16px);
   --ease:   cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -706,7 +706,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   font-size: 10px;
   font-weight: 500;
   color: var(--text-3);
-  padding: 8px 0 10px;
+  padding: 8px 0 8px;
   letter-spacing: 0.1px;
   transition: color .15s var(--ease);
 }
