@@ -587,6 +587,23 @@ function parseVoiceText(raw) {
   if (!result.date && /\boggi\b/.test(t))   result.date = todayStr();
   if (!result.date && /\bdomani\b/.test(t)) result.date = shiftDate(todayStr(), 1);
 
+  // Prossimo giorno della settimana
+  if (!result.date) {
+    const dayNames = ['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
+    for (let i = 0; i < dayNames.length; i++) {
+      if (t.includes(dayNames[i])) {
+        const today = new Date(); today.setHours(0,0,0,0);
+        const todayDow = today.getDay();
+        let diff = i - todayDow;
+        if (diff <= 0) diff += 7; // sempre il PROSSIMO
+        const target = new Date(today);
+        target.setDate(today.getDate() + diff);
+        result.date = toDateStr(target);
+        break;
+      }
+    }
+  }
+
   // --- SERVIZIO ---
   if (/\bcena\b/.test(t)) result.service = 'dinner';
   else if (/\bpranzo\b/.test(t)) result.service = 'lunch';
