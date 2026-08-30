@@ -61,7 +61,8 @@ const s = {
   calMonth:  new Date().getMonth(),
   editingId: null,
   service:   'lunch',
-  people:    2,
+  adults:    2,
+  children:  0,
 };
 
 let reservations = [];
@@ -151,7 +152,7 @@ function forDate(date, service) {
 }
 
 function totalPeople(list) {
-  return list.reduce((n, r) => n + r.people, 0);
+  return list.reduce((n, r) => n + (r.adults || 0) + (r.children || 0), 0);
 }
 
 // ============================================================
@@ -230,6 +231,12 @@ function buildCard(r) {
   card.className = `res-card${isDinner ? ' dinner-card' : ''}`;
   card.dataset.id = r.id;
 
+  const adults   = r.adults   ?? r.people ?? 0;
+  const children = r.children ?? 0;
+  const badgeText = children > 0
+    ? `${adults}<span class="badge-sep">+</span>${children}<span class="badge-child">👶</span>`
+    : `${adults}`;
+
   card.innerHTML = `
     <div class="res-card-inner">
       <span class="res-badge">
@@ -238,7 +245,7 @@ function buildCard(r) {
           <circle cx="9" cy="7" r="4"/>
           <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
         </svg>
-        ${r.people}
+        ${badgeText}
       </span>
       <span class="res-name">${esc(r.name)}</span>
       <button class="res-edit-btn" aria-label="Modifica">
@@ -360,14 +367,16 @@ function switchView(name) {
 function openAdd(service) {
   s.editingId = null;
   s.service   = service;
-  s.people    = 2;
+  s.adults    = 2;
+  s.children  = 0;
 
-  document.getElementById('sheetTitle').textContent = 'Nuova prenotazione';
-  document.getElementById('formId').value           = '';
-  document.getElementById('formDate').value         = s.viewDate;
-  document.getElementById('formName').value         = '';
-  document.getElementById('formNotes').value        = '';
-  document.getElementById('stepVal').textContent    = '2';
+  document.getElementById('sheetTitle').textContent  = 'Nuova prenotazione';
+  document.getElementById('formId').value            = '';
+  document.getElementById('formDate').value          = s.viewDate;
+  document.getElementById('formName').value          = '';
+  document.getElementById('formNotes').value         = '';
+  document.getElementById('stepAdults').textContent  = '2';
+  document.getElementById('stepChildren').textContent = '0';
   document.getElementById('btnDeleteRes').classList.add('hidden');
   setSvc(service);
   showModal();
@@ -379,14 +388,16 @@ function openEdit(id) {
 
   s.editingId = id;
   s.service   = r.service;
-  s.people    = r.people;
+  s.adults    = r.adults   ?? r.people ?? 2;
+  s.children  = r.children ?? 0;
 
-  document.getElementById('sheetTitle').textContent = 'Modifica prenotazione';
-  document.getElementById('formId').value           = id;
-  document.getElementById('formDate').value         = r.date;
-  document.getElementById('formName').value         = r.name;
-  document.getElementById('formNotes').value        = r.notes || '';
-  document.getElementById('stepVal').textContent    = r.people;
+  document.getElementById('sheetTitle').textContent   = 'Modifica prenotazione';
+  document.getElementById('formId').value             = id;
+  document.getElementById('formDate').value           = r.date;
+  document.getElementById('formName').value           = r.name;
+  document.getElementById('formNotes').value          = r.notes || '';
+  document.getElementById('stepAdults').textContent   = s.adults;
+  document.getElementById('stepChildren').textContent = s.children;
   document.getElementById('btnDeleteRes').classList.remove('hidden');
   setSvc(r.service);
   showModal();
@@ -455,15 +466,16 @@ async function handleSubmit(e) {
   setBtnLoading(true);
 
   try {
+    const people = s.adults + s.children;
     if (s.editingId) {
       const updated = await updateReservation(s.editingId, {
-        date, service: s.service, name, people: s.people, notes
+        date, service: s.service, name, people, adults: s.adults, children: s.children, notes
       });
       const idx = reservations.findIndex(r => r.id === s.editingId);
       if (idx !== -1) reservations[idx] = updated;
     } else {
       const created = await insertReservation({
-        date, service: s.service, name, people: s.people, notes
+        date, service: s.service, name, people, adults: s.adults, children: s.children, notes
       });
       reservations.push(created);
       reservations.sort((a, b) =>
@@ -586,11 +598,17 @@ async function init() {
     btn.addEventListener('click', () => setSvc(btn.dataset.value));
   });
 
-  document.getElementById('btnDec').addEventListener('click', () => {
-    if (s.people > 1) { s.people--; document.getElementById('stepVal').textContent = s.people; }
+  document.getElementById('btnDecAdults').addEventListener('click', () => {
+    if (s.adults > 0) { s.adults--; document.getElementById('stepAdults').textContent = s.adults; }
   });
-  document.getElementById('btnInc').addEventListener('click', () => {
-    if (s.people < 99) { s.people++; document.getElementById('stepVal').textContent = s.people; }
+  document.getElementById('btnIncAdults').addEventListener('click', () => {
+    if (s.adults < 99) { s.adults++; document.getElementById('stepAdults').textContent = s.adults; }
+  });
+  document.getElementById('btnDecChildren').addEventListener('click', () => {
+    if (s.children > 0) { s.children--; document.getElementById('stepChildren').textContent = s.children; }
+  });
+  document.getElementById('btnIncChildren').addEventListener('click', () => {
+    if (s.children < 99) { s.children++; document.getElementById('stepChildren').textContent = s.children; }
   });
 
   document.getElementById('reservationForm').addEventListener('submit', handleSubmit);

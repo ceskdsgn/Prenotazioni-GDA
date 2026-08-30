@@ -473,6 +473,8 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
 [data-theme="dark"] .dinner-card .res-badge { color: #0A84FF; }
 
 .res-badge svg { width: 12px; height: 12px; }
+.badge-sep { margin: 0 2px; font-weight: 400; opacity: 0.6; }
+.badge-child { font-size: 13px; margin-left: 2px; }
 
 .res-name {
   flex: 1;
@@ -706,16 +708,16 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   border: none;
   background: none;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-3);
-  padding: 8px 0 8px;
+  padding: 8px 0 28px;
   letter-spacing: 0.1px;
   transition: color .15s var(--ease);
 }
 
 .nav-item.active { color: var(--primary); }
-.nav-icon { width: 30px; height: 30px; }
+.nav-icon { width: 26px; height: 26px; }
 
 /* ============================================================
    MODAL SHEET
