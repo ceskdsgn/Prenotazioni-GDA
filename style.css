@@ -164,6 +164,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   transform: translateX(20px);
   transition: opacity .22s var(--ease), transform .22s var(--ease);
   overscroll-behavior: contain;
+  padding-bottom: calc(var(--nav-h) + var(--safe-b));
 }
 
 .view.active {
@@ -685,13 +686,17 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
 ============================================================ */
 .bottom-nav {
   display: flex;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   background: rgba(249, 249, 249, 0.94);
   border-top: 0.5px solid var(--sep);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   backdrop-filter: blur(20px) saturate(180%);
   padding-bottom: var(--safe-b);
   height: calc(var(--nav-h) + var(--safe-b));
-  flex-shrink: 0;
+  z-index: 100;
 }
 
 [data-theme="dark"] .bottom-nav {
