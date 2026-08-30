@@ -462,6 +462,7 @@ async function handleSubmit(e) {
   const notes = document.getElementById('formNotes').value.trim();
 
   if (!date || !name) return;
+  if (s.adults < 1) { showError('Inserisci almeno 1 adulto.'); return; }
 
   setBtnLoading(true);
 
