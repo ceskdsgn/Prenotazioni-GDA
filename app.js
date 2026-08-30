@@ -155,7 +155,7 @@ function renderHome() {
 
   document.getElementById('dayLabel').textContent   = fmtDayLabel(date);
   document.getElementById('dayDateSub').textContent = fmtDateLong(date);
-  document.getElementById('badgeToday').classList.toggle('hidden', date !== today);
+  document.getElementById('btnGoToday').classList.toggle('hidden', date !== today);
 
   renderList('lunch');
   renderList('dinner');
@@ -521,7 +521,10 @@ async function init() {
   });
 
   document.querySelectorAll('.nav-item').forEach(btn => {
-    btn.addEventListener('click', () => switchView(btn.dataset.view));
+    btn.addEventListener('click', () => {
+      if (btn.dataset.view === 'home') s.viewDate = todayStr();
+      switchView(btn.dataset.view);
+    });
   });
 
   document.querySelectorAll('.add-res-btn').forEach(btn => {

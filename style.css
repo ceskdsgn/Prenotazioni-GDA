@@ -61,7 +61,7 @@
   --r-f:   999px;
 
   --nav-h:  64px;
-  --safe-b: env(safe-area-inset-bottom, 16px);
+  --safe-b: env(safe-area-inset-bottom, 20px);
   --ease:   cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -239,7 +239,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   padding: 7px 15px;
   border-radius: var(--r-f);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 800;
   cursor: pointer;
   letter-spacing: -0.1px;
   box-shadow: var(--sh-xs);
@@ -290,17 +290,32 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
 }
 
 .day-label {
-  font-size: 17px;
-  font-weight: 600;
+  font-size: 26px;
+  font-weight: 700;
   color: var(--text);
-  letter-spacing: -0.4px;
+  letter-spacing: -0.5px;
+}
+
+.day-date-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.day-separator {
+  width: 100%;
+  height: 1.5px;
+  background: #3C3C43;
+  border-radius: 1px;
+  margin: 3px 0;
 }
 
 .day-date-sub {
-  font-size: 13px;
-  color: var(--text-2);
-  font-weight: 400;
-  letter-spacing: -0.08px;
+  font-size: 22px;
+  color: #3C3C43;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  white-space: nowrap;
 }
 
 .badge-today {
@@ -320,6 +335,13 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
 /* ============================================================
    SERVICE SECTIONS
 ============================================================ */
+.service-divider {
+  height: 1.5px;
+  background: #000;
+  margin: 16px 16px 0;
+  border-radius: 1px;
+}
+
 .service-section {
   margin: 16px 16px 0;
   background: var(--surface);
@@ -526,7 +548,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
 /* ============================================================
    CALENDAR
 ============================================================ */
-.cal-wrap { padding: 16px 16px 32px; }
+.cal-wrap { padding: 16px 16px 32px; overflow-x: hidden; }
 
 .cal-nav-row {
   display: flex;
@@ -568,21 +590,23 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
 
 .cal-weekdays span {
   text-align: center;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-2);
   padding: 4px 0;
   letter-spacing: -0.08px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 3px;
+  gap: 14px 4px;
 }
 
 .cal-cell {
-  aspect-ratio: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -591,7 +615,8 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   cursor: pointer;
   transition: background .14s;
   user-select: none;
-  padding: 3px 2px 5px;
+  padding: 4px 2px;
+  min-width: 0;
 }
 
 .cal-cell:active { background: var(--surface-3); }
@@ -600,8 +625,8 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
 .cal-cell.is-today .cal-num {
   background: var(--primary);
   color: #fff;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--r-f);
   display: flex;
   align-items: center;
@@ -612,19 +637,21 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
 .cal-cell.is-selected { background: var(--primary-bg); border-radius: var(--r-m); }
 
 .cal-num {
-  font-size: 15px;
-  font-weight: 400;
+  font-size: 17px;
+  font-weight: 500;
   color: var(--text);
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
+  max-width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
-.cal-dots { display: flex; gap: 3px; height: 6px; align-items: center; }
+.cal-dots { display: flex; gap: 4px; height: 12px; align-items: center; }
 
-.cal-dot { width: 5px; height: 5px; border-radius: var(--r-f); }
+.cal-dot { width: 10px; height: 10px; border-radius: var(--r-f); }
 .lunch-dot  { background: var(--lunch-dot); }
 .dinner-dot { background: var(--dinner-dot); }
 
