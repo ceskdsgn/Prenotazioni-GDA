@@ -159,7 +159,6 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   transform: translateX(20px);
   transition: opacity .22s var(--ease), transform .22s var(--ease);
   overscroll-behavior: contain;
-  padding-bottom: 0;
 }
 
 .view.active {
