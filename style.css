@@ -61,6 +61,7 @@
   --r-f:   999px;
 
   --nav-h:  64px;
+  --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 20px);
   --ease:   cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -138,6 +139,8 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   max-width: 680px;
   margin: 0 auto;
   position: relative;
+  padding-top: var(--safe-t);
+  box-sizing: border-box;
 }
 
 /* ============================================================
