@@ -622,6 +622,9 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
 .cal-cell:active { background: var(--surface-3); }
 .cal-cell.other-month .cal-num { color: var(--text-3); }
 
+.cal-cell.is-closed { cursor: pointer; opacity: 0.35; }
+.cal-cell.is-closed .cal-num { text-decoration: line-through; }
+
 .cal-cell.is-today .cal-num {
   background: var(--primary);
   color: #fff;
@@ -703,8 +706,8 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   border: none;
   background: none;
   cursor: pointer;
-  font-size: 10px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--text-3);
   padding: 8px 0 8px;
   letter-spacing: 0.1px;
@@ -712,7 +715,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
 }
 
 .nav-item.active { color: var(--primary); }
-.nav-icon { width: 24px; height: 24px; }
+.nav-icon { width: 30px; height: 30px; }
 
 /* ============================================================
    MODAL SHEET

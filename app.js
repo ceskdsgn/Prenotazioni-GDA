@@ -15,6 +15,44 @@ const MONTHS_IT = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
                    'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 
 // ============================================================
+// FESTIVITÀ ITALIANE
+// ============================================================
+function easterDate(year) {
+  const a = year % 19, b = Math.floor(year / 100), c = year % 100;
+  const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4), k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day   = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(year, month - 1, day);
+}
+
+function isItalianHoliday(dateStr) {
+  const d = fromDateStr(dateStr);
+  const y = d.getFullYear(), m = d.getMonth() + 1, day = d.getDate();
+
+  // Festività fisse
+  const fixed = [
+    [1,1],[1,6],[4,25],[5,1],[6,2],[8,15],[11,1],[12,8],[12,25],[12,26]
+  ];
+  if (fixed.some(([fm, fd]) => m === fm && day === fd)) return true;
+
+  // Pasqua e Lunedì dell'Angelo
+  const easter = easterDate(y);
+  const easterMonday = new Date(easter); easterMonday.setDate(easter.getDate() + 1);
+  if (toDateStr(easter) === dateStr || toDateStr(easterMonday) === dateStr) return true;
+
+  return false;
+}
+
+function isClosedDay(dateStr) {
+  const d = fromDateStr(dateStr);
+  return d.getDay() === 2 && !isItalianHoliday(dateStr); // 2 = martedì
+}
+
+// ============================================================
 // STATE
 // ============================================================
 const s = {
@@ -256,6 +294,7 @@ function renderCalendar() {
     const cellDate  = toDateStr(new Date(dy, dm, day));
     const isToday   = cellDate === today;
     const isSelected = cellDate === s.viewDate;
+    const isClosed  = inMonth && isClosedDay(cellDate);
 
     const dayRes    = forDate(cellDate, null);
     const hasLunch  = dayRes.some(r => r.service === 'lunch');
@@ -267,6 +306,7 @@ function renderCalendar() {
       !inMonth   ? 'other-month' : '',
       isToday    ? 'is-today'    : '',
       isSelected ? 'is-selected' : '',
+      isClosed   ? 'is-closed'   : '',
     ].filter(Boolean).join(' ');
 
     cell.innerHTML = `
