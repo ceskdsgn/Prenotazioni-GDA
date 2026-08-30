@@ -61,8 +61,7 @@
   --r-f:   999px;
 
   --nav-h:  64px;
-  --safe-t: env(safe-area-inset-top, 0px);
-  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-b: env(safe-area-inset-bottom, 16px);
   --ease:   cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -116,8 +115,7 @@
 /* ============================================================
    BASE
 ============================================================ */
-html { height: 100%; overflow: hidden; }
-body { height: 100%; height: 100dvh; overflow: hidden; }
+html, body { height: 100%; overflow: hidden; }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
@@ -136,15 +134,10 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
 #app {
   display: flex;
   flex-direction: column;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  height: 100%;
   max-width: 680px;
   margin: 0 auto;
-  padding-top: var(--safe-t);
-  box-sizing: border-box;
+  position: relative;
 }
 
 /* ============================================================
@@ -166,7 +159,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   transform: translateX(20px);
   transition: opacity .22s var(--ease), transform .22s var(--ease);
   overscroll-behavior: contain;
-  padding-bottom: 80px;
+  padding-bottom: 0;
 }
 
 .view.active {
@@ -688,16 +681,13 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
 ============================================================ */
 .bottom-nav {
   display: flex;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
   background: rgba(249, 249, 249, 0.94);
   border-top: 0.5px solid var(--sep);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   backdrop-filter: blur(20px) saturate(180%);
-  height: 64px;
-  z-index: 100;
+  padding-bottom: var(--safe-b);
+  height: calc(var(--nav-h) + var(--safe-b));
+  flex-shrink: 0;
 }
 
 [data-theme="dark"] .bottom-nav {
@@ -756,7 +746,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   transition: transform .30s var(--ease);
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 16px);
   box-shadow: var(--sh-l);
 }
 
