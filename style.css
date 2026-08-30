@@ -164,7 +164,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   transform: translateX(20px);
   transition: opacity .22s var(--ease), transform .22s var(--ease);
   overscroll-behavior: contain;
-  padding-bottom: calc(var(--nav-h) + var(--safe-b));
+  padding-bottom: 80px;
 }
 
 .view.active {
@@ -694,8 +694,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   border-top: 0.5px solid var(--sep);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   backdrop-filter: blur(20px) saturate(180%);
-  padding-bottom: var(--safe-b);
-  height: calc(var(--nav-h) + var(--safe-b));
+  height: 64px;
   z-index: 100;
 }
 
