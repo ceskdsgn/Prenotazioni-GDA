@@ -706,7 +706,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   font-size: 10px;
   font-weight: 500;
   color: var(--text-3);
-  padding: 8px 0 0;
+  padding: 8px 0 10px;
   letter-spacing: 0.1px;
   transition: color .15s var(--ease);
 }
