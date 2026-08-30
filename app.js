@@ -234,7 +234,7 @@ function buildCard(r) {
   const adults   = r.adults   ?? r.people ?? 0;
   const children = r.children ?? 0;
   const badgeText = children > 0
-    ? `${adults}<span class="badge-sep">+</span>${children}<span class="badge-child">👶</span>`
+    ? `${adults}<span class="badge-sep">+</span>${children}`
     : `${adults}`;
 
   card.innerHTML = `
@@ -548,6 +548,144 @@ function setTheme(mode) {
 }
 
 // ============================================================
+// VOICE RESERVATION
+// ============================================================
+const MONTHS_MAP = {
+  gennaio:1, febbraio:2, marzo:3, aprile:4, maggio:5, giugno:6,
+  luglio:7, agosto:8, settembre:9, ottobre:10, novembre:11, dicembre:12
+};
+
+function parseVoiceText(text) {
+  const t = text.toLowerCase().trim();
+  const result = {};
+
+  // --- DATA ---
+  const dateMatch = t.match(/(\d{1,2})\s+(gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)(?:\s+(\d{4}))?/);
+  if (dateMatch) {
+    const day   = parseInt(dateMatch[1]);
+    const month = MONTHS_MAP[dateMatch[2]];
+    const year  = dateMatch[3] ? parseInt(dateMatch[3]) : new Date().getFullYear();
+    // Se la data è già passata quest'anno, usa il prossimo
+    const candidate = new Date(year, month - 1, day);
+    const today = new Date(); today.setHours(0,0,0,0);
+    if (candidate < today && !dateMatch[3]) candidate.setFullYear(year + 1);
+    result.date = toDateStr(candidate);
+  }
+
+  // --- SERVIZIO ---
+  if (/\bcena\b/.test(t)) result.service = 'dinner';
+  else if (/\bpranzo\b/.test(t)) result.service = 'lunch';
+
+  // --- NOME ---
+  const nameMatch = t.match(/\bnome\s+([a-zàèéìòù'\s]+?)(?:\s+(?:\d|\bnote\b|\badult|\bbambin|\bpers))/i);
+  if (nameMatch) {
+    result.name = nameMatch[1].trim().replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  // --- ADULTI ---
+  const adultsMatch = t.match(/(\d+)\s+adult[oi]/);
+  if (adultsMatch) result.adults = parseInt(adultsMatch[1]);
+
+  // --- BAMBINI ---
+  const childrenMatch = t.match(/(\d+)\s+bambin[io]/);
+  if (childrenMatch) result.children = parseInt(childrenMatch[1]);
+
+  // --- PERSONE (fallback se non specificato adulti/bambini) ---
+  if (result.adults == null) {
+    const peopleMatch = t.match(/(\d+)\s+person[ae]/);
+    if (peopleMatch) result.adults = parseInt(peopleMatch[1]);
+  }
+
+  // --- NOTE ---
+  const notesMatch = t.match(/\bnote?\s+(.+)$/);
+  if (notesMatch) {
+    result.notes = notesMatch[1].trim();
+    result.notes = result.notes.charAt(0).toUpperCase() + result.notes.slice(1);
+  }
+
+  return result;
+}
+
+function applyVoiceResult(parsed) {
+  if (parsed.date) s.viewDate = parsed.date;
+
+  s.editingId = null;
+  s.service   = parsed.service || 'lunch';
+  s.adults    = parsed.adults  ?? 2;
+  s.children  = parsed.children ?? 0;
+
+  document.getElementById('sheetTitle').textContent   = 'Nuova prenotazione';
+  document.getElementById('formId').value             = '';
+  document.getElementById('formDate').value           = parsed.date || s.viewDate;
+  document.getElementById('formName').value           = parsed.name || '';
+  document.getElementById('formNotes').value          = parsed.notes || '';
+  document.getElementById('stepAdults').textContent   = s.adults;
+  document.getElementById('stepChildren').textContent = s.children;
+  document.getElementById('btnDeleteRes').classList.add('hidden');
+  setSvc(s.service);
+  showModal();
+}
+
+function initVoice() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const fab   = document.getElementById('voiceFab');
+  const toast = document.getElementById('voiceToast');
+  const toastText = document.getElementById('voiceToastText');
+
+  if (!SpeechRecognition) {
+    // Nasconde il bottone se il browser non supporta la voce
+    fab.classList.add('hidden');
+    return;
+  }
+
+  fab.classList.remove('hidden');
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = 'it-IT';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  let listening = false;
+
+  fab.addEventListener('click', () => {
+    if (listening) {
+      recognition.stop();
+      return;
+    }
+    recognition.start();
+  });
+
+  recognition.onstart = () => {
+    listening = true;
+    fab.classList.add('recording');
+    toast.classList.remove('hidden');
+    toastText.textContent = 'In ascolto…';
+  };
+
+  recognition.onresult = (e) => {
+    const transcript = e.results[0][0].transcript;
+    toastText.textContent = `"${transcript}"`;
+    setTimeout(() => {
+      toast.classList.add('hidden');
+      const parsed = parseVoiceText(transcript);
+      applyVoiceResult(parsed);
+    }, 1200);
+  };
+
+  recognition.onerror = (e) => {
+    toastText.textContent = e.error === 'not-allowed'
+      ? 'Microfono non autorizzato'
+      : 'Errore riconoscimento';
+    setTimeout(() => toast.classList.add('hidden'), 2500);
+  };
+
+  recognition.onend = () => {
+    listening = false;
+    fab.classList.remove('recording');
+  };
+}
+
+// ============================================================
 // INIT
 // ============================================================
 async function init() {
@@ -620,6 +758,7 @@ async function init() {
   });
 
   initSwipe();
+  initVoice();
   switchView('home');
 }
 
