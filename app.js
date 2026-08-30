@@ -569,58 +569,57 @@ function wordToNum(s) {
 }
 
 function parseVoiceText(raw) {
-  const t = raw.toLowerCase()
-    .replace(/[""«»]/g, '"')
-    .replace(/\s+/g, ' ')
-    .trim();
-
+  const t = raw.toLowerCase().replace(/\s+/g, ' ').trim();
   const result = {};
 
-  // DATA: "28 dicembre" / "dicembre 28"
-  const dateRx = /(?:(\d{1,2})\s+)?(gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)(?:\s+(\d{1,2}))?(?:\s+(\d{4}))?/;
+  // --- DATA ---
+  const monthNames = Object.keys(MONTHS_MAP).join('|');
+  const dateRx = new RegExp(`(\\d{1,2})\\s+(${monthNames})(?:\\s+(\\d{4}))?`);
   const dm = t.match(dateRx);
   if (dm) {
-    const day   = parseInt(dm[1] || dm[3]);
-    const month = MONTHS_MAP[dm[2]];
-    const year  = dm[4] ? parseInt(dm[4]) : new Date().getFullYear();
-    if (day && month) {
-      const candidate = new Date(year, month - 1, day);
-      const today = new Date(); today.setHours(0,0,0,0);
-      if (candidate < today && !dm[4]) candidate.setFullYear(year + 1);
-      result.date = toDateStr(candidate);
-    }
+    const day = parseInt(dm[1]), month = MONTHS_MAP[dm[2]];
+    const year = dm[3] ? parseInt(dm[3]) : new Date().getFullYear();
+    const candidate = new Date(year, month - 1, day);
+    const today = new Date(); today.setHours(0,0,0,0);
+    if (candidate < today && !dm[3]) candidate.setFullYear(year + 1);
+    result.date = toDateStr(candidate);
   }
   if (!result.date && /\boggi\b/.test(t))   result.date = todayStr();
   if (!result.date && /\bdomani\b/.test(t)) result.date = shiftDate(todayStr(), 1);
 
-  // SERVIZIO
+  // --- SERVIZIO ---
   if (/\bcena\b/.test(t)) result.service = 'dinner';
   else if (/\bpranzo\b/.test(t)) result.service = 'lunch';
 
-  // NOME: tutto tra "nome" e la parola chiave successiva
-  const nameRx = /\bnome\s+([\w\sàèéìòù']+?)(?:\s+(?:not[ae]|adult[oi]|bambin[io]|person[ae]|\d|pranzo|cena)|\s*$)/i;
-  const nm = t.match(nameRx);
-  if (nm) result.name = nm[1].trim().replace(/\b\w/g, c => c.toUpperCase());
+  // --- SPLIT per keyword: estrai segmenti ---
+  // Normalizza sinonimi
+  const norm = t
+    .replace(/\bnot[ae]\b/g, 'NOTA')
+    .replace(/\bnome\b/g, 'NOME')
+    .replace(/\badult[oi]\b/g, 'ADULTI')
+    .replace(/\bbambin[io]\b|bimb[io]\b/g, 'BAMBINI')
+    .replace(/\bperson[ae]\b/g, 'ADULTI');
 
-  // ADULTI
-  const am = t.match(/(\w+)\s+adult[oi]/);
-  if (am) result.adults = wordToNum(am[1]);
-
-  // BAMBINI
-  const cm = t.match(/(\w+)\s+bambin[io]/);
-  if (cm) result.children = wordToNum(cm[1]);
-
-  // PERSONE (fallback)
-  if (result.adults == null) {
-    const pm = t.match(/(\w+)\s+person[ae]/);
-    if (pm) result.adults = wordToNum(pm[1]);
+  // NOME: testo dopo "NOME" fino alla prossima keyword o fine
+  const nomeMatch = norm.match(/NOME\s+(.+?)(?=\s*(?:ADULTI|BAMBINI|NOTA|$))/);
+  if (nomeMatch) {
+    // rimuovi numeri residui all'inizio/fine
+    const raw = nomeMatch[1].replace(/^\d+\s*/, '').replace(/\s*\d+$/, '').trim();
+    if (raw) result.name = raw.replace(/\b\w/g, c => c.toUpperCase());
   }
 
-  // NOTE: tutto dopo "note" o "nota"
-  const notesRx = /\bnot[ae]\s+([\w\sàèéìòù',.!?]+?)(?:\s*$)/i;
-  const notm = t.match(notesRx);
-  if (notm) {
-    const n = notm[1].trim();
+  // ADULTI: numero prima di "ADULTI"
+  const adultiMatch = norm.match(/(\d+|\w+)\s+ADULTI/);
+  if (adultiMatch) result.adults = wordToNum(adultiMatch[1]);
+
+  // BAMBINI: numero prima di "BAMBINI"
+  const bambiniMatch = norm.match(/(\d+|\w+)\s+BAMBINI/);
+  if (bambiniMatch) result.children = wordToNum(bambiniMatch[1]);
+
+  // NOTA: testo dopo "NOTA" fino a fine
+  const notaMatch = norm.match(/NOTA\s+(.+)/);
+  if (notaMatch) {
+    const n = notaMatch[1].trim();
     result.notes = n.charAt(0).toUpperCase() + n.slice(1);
   }
 
