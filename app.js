@@ -555,52 +555,73 @@ const MONTHS_MAP = {
   luglio:7, agosto:8, settembre:9, ottobre:10, novembre:11, dicembre:12
 };
 
-function parseVoiceText(text) {
-  const t = text.toLowerCase().trim();
+// Converte testo numerico italiano → numero
+const NUM_WORDS = {
+  uno:1, due:2, tre:3, quattro:4, cinque:5, sei:6, sette:7, otto:8,
+  nove:9, dieci:10, undici:11, dodici:12, tredici:13, quattordici:14,
+  quindici:15, sedici:16, diciassette:17, diciotto:18, diciannove:19,
+  venti:20, trenta:30, quaranta:40, cinquanta:50
+};
+function wordToNum(s) {
+  const n = parseInt(s);
+  if (!isNaN(n)) return n;
+  return NUM_WORDS[s.toLowerCase()] ?? null;
+}
+
+function parseVoiceText(raw) {
+  const t = raw.toLowerCase()
+    .replace(/[""«»]/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim();
+
   const result = {};
 
-  // --- DATA ---
-  const dateMatch = t.match(/(\d{1,2})\s+(gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)(?:\s+(\d{4}))?/);
-  if (dateMatch) {
-    const day   = parseInt(dateMatch[1]);
-    const month = MONTHS_MAP[dateMatch[2]];
-    const year  = dateMatch[3] ? parseInt(dateMatch[3]) : new Date().getFullYear();
-    // Se la data è già passata quest'anno, usa il prossimo
-    const candidate = new Date(year, month - 1, day);
-    const today = new Date(); today.setHours(0,0,0,0);
-    if (candidate < today && !dateMatch[3]) candidate.setFullYear(year + 1);
-    result.date = toDateStr(candidate);
+  // DATA: "28 dicembre" / "dicembre 28"
+  const dateRx = /(?:(\d{1,2})\s+)?(gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)(?:\s+(\d{1,2}))?(?:\s+(\d{4}))?/;
+  const dm = t.match(dateRx);
+  if (dm) {
+    const day   = parseInt(dm[1] || dm[3]);
+    const month = MONTHS_MAP[dm[2]];
+    const year  = dm[4] ? parseInt(dm[4]) : new Date().getFullYear();
+    if (day && month) {
+      const candidate = new Date(year, month - 1, day);
+      const today = new Date(); today.setHours(0,0,0,0);
+      if (candidate < today && !dm[4]) candidate.setFullYear(year + 1);
+      result.date = toDateStr(candidate);
+    }
   }
+  if (!result.date && /\boggi\b/.test(t))   result.date = todayStr();
+  if (!result.date && /\bdomani\b/.test(t)) result.date = shiftDate(todayStr(), 1);
 
-  // --- SERVIZIO ---
+  // SERVIZIO
   if (/\bcena\b/.test(t)) result.service = 'dinner';
   else if (/\bpranzo\b/.test(t)) result.service = 'lunch';
 
-  // --- NOME ---
-  const nameMatch = t.match(/\bnome\s+([a-zàèéìòù'\s]+?)(?:\s+(?:\d|\bnote\b|\badult|\bbambin|\bpers))/i);
-  if (nameMatch) {
-    result.name = nameMatch[1].trim().replace(/\b\w/g, c => c.toUpperCase());
-  }
+  // NOME: tutto tra "nome" e la parola chiave successiva
+  const nameRx = /\bnome\s+([\w\sàèéìòù']+?)(?:\s+(?:not[ae]|adult[oi]|bambin[io]|person[ae]|\d|pranzo|cena)|\s*$)/i;
+  const nm = t.match(nameRx);
+  if (nm) result.name = nm[1].trim().replace(/\b\w/g, c => c.toUpperCase());
 
-  // --- ADULTI ---
-  const adultsMatch = t.match(/(\d+)\s+adult[oi]/);
-  if (adultsMatch) result.adults = parseInt(adultsMatch[1]);
+  // ADULTI
+  const am = t.match(/(\w+)\s+adult[oi]/);
+  if (am) result.adults = wordToNum(am[1]);
 
-  // --- BAMBINI ---
-  const childrenMatch = t.match(/(\d+)\s+bambin[io]/);
-  if (childrenMatch) result.children = parseInt(childrenMatch[1]);
+  // BAMBINI
+  const cm = t.match(/(\w+)\s+bambin[io]/);
+  if (cm) result.children = wordToNum(cm[1]);
 
-  // --- PERSONE (fallback se non specificato adulti/bambini) ---
+  // PERSONE (fallback)
   if (result.adults == null) {
-    const peopleMatch = t.match(/(\d+)\s+person[ae]/);
-    if (peopleMatch) result.adults = parseInt(peopleMatch[1]);
+    const pm = t.match(/(\w+)\s+person[ae]/);
+    if (pm) result.adults = wordToNum(pm[1]);
   }
 
-  // --- NOTE ---
-  const notesMatch = t.match(/\bnote?\s+(.+)$/);
-  if (notesMatch) {
-    result.notes = notesMatch[1].trim();
-    result.notes = result.notes.charAt(0).toUpperCase() + result.notes.slice(1);
+  // NOTE: tutto dopo "note" o "nota"
+  const notesRx = /\bnot[ae]\s+([\w\sàèéìòù',.!?]+?)(?:\s*$)/i;
+  const notm = t.match(notesRx);
+  if (notm) {
+    const n = notm[1].trim();
+    result.notes = n.charAt(0).toUpperCase() + n.slice(1);
   }
 
   return result;
@@ -628,15 +649,11 @@ function applyVoiceResult(parsed) {
 
 function initVoice() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const fab   = document.getElementById('voiceFab');
-  const toast = document.getElementById('voiceToast');
+  const fab       = document.getElementById('voiceFab');
+  const toast     = document.getElementById('voiceToast');
   const toastText = document.getElementById('voiceToastText');
 
-  if (!SpeechRecognition) {
-    // Nasconde il bottone se il browser non supporta la voce
-    fab.classList.add('hidden');
-    return;
-  }
+  if (!SpeechRecognition) { fab.classList.add('hidden'); return; }
 
   fab.classList.remove('hidden');
 
@@ -644,44 +661,57 @@ function initVoice() {
   recognition.lang = 'it-IT';
   recognition.continuous = false;
   recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
 
   let listening = false;
+  let gotResult = false;
+
+  function resetUI() {
+    listening = false;
+    gotResult = false;
+    fab.classList.remove('recording');
+  }
+
+  function hideToast() { toast.classList.add('hidden'); }
 
   fab.addEventListener('click', () => {
-    if (listening) {
-      recognition.stop();
-      return;
-    }
-    recognition.start();
+    if (listening) { recognition.stop(); return; }
+    gotResult = false;
+    try { recognition.start(); } catch(e) { console.warn('SpeechRecognition start:', e); }
   });
 
   recognition.onstart = () => {
     listening = true;
     fab.classList.add('recording');
     toast.classList.remove('hidden');
-    toastText.textContent = 'In ascolto…';
+    toastText.textContent = 'In ascolto… parla ora';
   };
 
   recognition.onresult = (e) => {
-    const transcript = e.results[0][0].transcript;
+    gotResult = true;
+    const transcript = Array.from(e.results)
+      .map(r => r[0].transcript).join(' ');
     toastText.textContent = `"${transcript}"`;
     setTimeout(() => {
-      toast.classList.add('hidden');
-      const parsed = parseVoiceText(transcript);
-      applyVoiceResult(parsed);
-    }, 1200);
+      hideToast();
+      applyVoiceResult(parseVoiceText(transcript));
+    }, 1400);
   };
 
   recognition.onerror = (e) => {
+    resetUI();
     toastText.textContent = e.error === 'not-allowed'
-      ? 'Microfono non autorizzato'
-      : 'Errore riconoscimento';
-    setTimeout(() => toast.classList.add('hidden'), 2500);
+      ? 'Abilita il microfono nelle impostazioni'
+      : e.error === 'no-speech'
+      ? 'Nessuna voce rilevata'
+      : 'Errore: ' + e.error;
+    toast.classList.remove('hidden');
+    setTimeout(hideToast, 3000);
   };
 
   recognition.onend = () => {
-    listening = false;
-    fab.classList.remove('recording');
+    resetUI();
+    if (!gotResult) setTimeout(hideToast, 300);
   };
 }
 
