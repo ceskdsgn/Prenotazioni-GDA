@@ -620,9 +620,32 @@ function parseVoiceText(raw) {
   // NOME: testo dopo "NOME" fino alla prossima keyword o fine
   const nomeMatch = norm.match(/NOME\s+(.+?)(?=\s*(?:ADULTI|BAMBINI|NOTA|$))/);
   if (nomeMatch) {
-    // rimuovi numeri residui all'inizio/fine
     const raw = nomeMatch[1].replace(/^\d+\s*/, '').replace(/\s*\d+$/, '').trim();
     if (raw) result.name = raw.replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  // NOME FALLBACK: se non trovato con keyword, cerca testo tra servizio/data e i numeri/note
+  if (!result.name) {
+    // Rimuovi dal testo normalizzato tutto ciò che è già noto
+    let leftover = norm
+      .replace(/\bprenotazione\b/g, '')
+      .replace(/\boggi\b|\bdomani\b/g, '')
+      .replace(/\b(luned[iì]|marted[iì]|mercoled[iì]|gioved[iì]|venerd[iì]|sabato|domenica)\b/g, '')
+      .replace(new RegExp(`\\b(${Object.keys(MONTHS_MAP).join('|')})\\b`, 'g'), '')
+      .replace(/\b(pranzo|cena|a pranzo|a cena)\b/g, '')
+      .replace(/\d+\s+ADULTI/g, '')
+      .replace(/\d+\s+BAMBINI/g, '')
+      .replace(/(\w+)\s+ADULTI/g, '')
+      .replace(/(\w+)\s+BAMBINI/g, '')
+      .replace(/NOTA\s+.+/, '')
+      .replace(/ADULTI|BAMBINI|NOTA|NOME/g, '')
+      .replace(/\b\d+\b/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (leftover.length > 1) {
+      result.name = leftover.replace(/\b\w/g, c => c.toUpperCase()).trim();
+    }
   }
 
   // ADULTI: numero prima di "ADULTI"
