@@ -851,7 +851,49 @@ async function init() {
 
   initSwipe();
   initVoice();
+  initAutoRefresh();
   switchView('home');
+}
+
+function rerender() {
+  const activeView = document.querySelector('.view.active');
+  if (activeView?.id === 'viewHome') renderHome();
+  else renderCalendar();
+}
+
+function initAutoRefresh() {
+  // Realtime: aggiornamento istantaneo per tutti gli utenti
+  db.channel('prenotazioni-realtime')
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'prenotazioni'
+    }, (payload) => {
+      const { eventType, new: row, old } = payload;
+      if (eventType === 'INSERT') {
+        reservations.push(row);
+        reservations.sort((a, b) =>
+          a.date !== b.date
+            ? a.date.localeCompare(b.date)
+            : new Date(a.created_at) - new Date(b.created_at)
+        );
+      } else if (eventType === 'UPDATE') {
+        const idx = reservations.findIndex(r => r.id === row.id);
+        if (idx !== -1) reservations[idx] = row;
+      } else if (eventType === 'DELETE') {
+        reservations = reservations.filter(r => r.id !== old.id);
+      }
+      rerender();
+    })
+    .subscribe();
+
+  // Fallback: ricarica dati completi quando si torna sull'app
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'visible') {
+      await loadData();
+      rerender();
+    }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', init);
