@@ -345,7 +345,48 @@ function buildCard(r) {
   `;
 
   card.addEventListener('click', () => openEdit(r.id));
+  addSwipeToDelete(card, r.id);
   return card;
+}
+
+function addSwipeToDelete(card, id) {
+  let startX = 0, startY = 0, dx = 0;
+  let swiping = false;
+
+  card.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    dx = 0;
+    swiping = false;
+  }, { passive: true });
+
+  card.addEventListener('touchmove', e => {
+    dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    if (!swiping && Math.abs(dy) > Math.abs(dx)) return; // vertical scroll
+    swiping = true;
+    if (dx < 0) {
+      card.style.transform = `translateX(${Math.max(dx, -100)}px)`;
+      card.style.transition = 'none';
+    }
+  }, { passive: true });
+
+  card.addEventListener('touchend', async () => {
+    card.style.transition = 'transform .3s ease';
+    if (dx < -60) {
+      card.style.transform = 'translateX(-100%)';
+      card.style.opacity = '0';
+      const ok = await confirmDelete();
+      if (ok) {
+        await removeReservation(id);
+      } else {
+        card.style.transform = '';
+        card.style.opacity = '';
+      }
+    } else {
+      card.style.transform = '';
+    }
+  });
 }
 
 // ============================================================

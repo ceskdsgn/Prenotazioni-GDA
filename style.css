@@ -510,7 +510,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   position: relative;
   border: 0.5px solid var(--sep);
   box-shadow: var(--sh-xs);
-  transition: opacity .15s var(--ease), box-shadow .15s var(--ease);
+  transition: opacity .15s var(--ease), box-shadow .15s var(--ease), transform .3s ease;
 }
 
 .res-card:active { opacity: 0.6; }
