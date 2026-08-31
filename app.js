@@ -871,12 +871,14 @@ function initAutoRefresh() {
     }, (payload) => {
       const { eventType, new: row, old } = payload;
       if (eventType === 'INSERT') {
-        reservations.push(row);
-        reservations.sort((a, b) =>
-          a.date !== b.date
-            ? a.date.localeCompare(b.date)
-            : new Date(a.created_at) - new Date(b.created_at)
-        );
+        if (!reservations.some(r => r.id === row.id)) {
+          reservations.push(row);
+          reservations.sort((a, b) =>
+            a.date !== b.date
+              ? a.date.localeCompare(b.date)
+              : new Date(a.created_at) - new Date(b.created_at)
+          );
+        }
       } else if (eventType === 'UPDATE') {
         const idx = reservations.findIndex(r => r.id === row.id);
         if (idx !== -1) reservations[idx] = row;
