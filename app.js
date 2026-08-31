@@ -190,6 +190,70 @@ function showError(msg) {
 // ============================================================
 // RENDER — HOME
 // ============================================================
+// ============================================================
+// NOTE GIORNALIERE
+// ============================================================
+let dailyNotes = {}; // { "2026-08-31": "testo" }
+
+async function loadNotes() {
+  const { data } = await db.from('note_giornaliere').select('date,testo');
+  if (data) data.forEach(r => { dailyNotes[r.date] = r.testo; });
+}
+
+async function saveNote(date, testo) {
+  await db.from('note_giornaliere').upsert({ date, testo, updated_at: new Date().toISOString() });
+  dailyNotes[date] = testo;
+}
+
+function renderNotePreview() {
+  const testo = dailyNotes[s.viewDate] || '';
+  const el = document.getElementById('notePreview');
+  if (!testo.trim()) {
+    el.textContent = 'Tocca per aggiungere una nota…';
+    el.classList.add('note-empty');
+  } else {
+    const lines = testo.split('\n').filter(l => l.trim()).slice(0, 3);
+    el.textContent = lines.join(' · ');
+    el.classList.remove('note-empty');
+  }
+}
+
+function openNoteModal() {
+  const date = s.viewDate;
+  document.getElementById('noteTitleLabel').textContent = `Note — ${fmtDateLong(date)}`;
+  document.getElementById('noteTextarea').value = dailyNotes[date] || '';
+  document.getElementById('noteOverlay').classList.remove('hidden');
+  document.getElementById('voiceFab').classList.add('hidden');
+  setTimeout(() => document.getElementById('noteTextarea').focus(), 300);
+}
+
+function closeNoteModal() {
+  document.getElementById('noteOverlay').classList.add('hidden');
+  const fab = document.getElementById('voiceFab');
+  if (fab.dataset.voiceEnabled) fab.classList.remove('hidden');
+}
+
+// ============================================================
+// PRANZO FERIALE
+// ============================================================
+function isWeekday(dateStr) {
+  const dow = fromDateStr(dateStr).getDay();
+  return dow >= 1 && dow <= 5; // lun-ven
+}
+
+function getLunchOverride(dateStr) {
+  return localStorage.getItem('lunchOpen_' + dateStr) === '1';
+}
+
+function setLunchOverride(dateStr, val) {
+  if (val) localStorage.setItem('lunchOpen_' + dateStr, '1');
+  else localStorage.removeItem('lunchOpen_' + dateStr);
+}
+
+function isLunchClosed(dateStr) {
+  return isWeekday(dateStr) && !getLunchOverride(dateStr);
+}
+
 function renderHome() {
   const date  = s.viewDate;
   const today = todayStr();
@@ -200,6 +264,7 @@ function renderHome() {
 
   renderList('lunch');
   renderList('dinner');
+  renderNotePreview();
 }
 
 function renderList(service) {
@@ -207,6 +272,25 @@ function renderList(service) {
   const items = forDate(date, service);
   const list  = document.getElementById(service === 'lunch' ? 'lunchList' : 'dinnerList');
   const chip  = document.getElementById(service === 'lunch' ? 'lunchChip' : 'dinnerChip');
+
+  // Pranzo chiuso nei giorni feriali
+  if (service === 'lunch') {
+    const section    = document.querySelector('.service-section:first-child');
+    const toggleBtn  = document.getElementById('lunchToggleBtn');
+    const chipEl     = document.getElementById('lunchChip');
+    const addBtn     = document.querySelector('.add-res-btn.add-lunch');
+    const closed     = isLunchClosed(date);
+
+    const deactivateBtn = document.getElementById('lunchDeactivateBtn');
+    const weekday = isWeekday(date);
+
+    toggleBtn.classList.toggle('hidden', !closed);
+    deactivateBtn.classList.toggle('hidden', !weekday || closed);
+    chipEl.classList.toggle('hidden', closed);
+    list.classList.toggle('hidden', closed);
+    addBtn.classList.toggle('hidden', closed);
+    section.classList.toggle('lunch-closed', closed);
+  }
 
   list.innerHTML = '';
 
@@ -790,6 +874,7 @@ async function init() {
   document.getElementById('dinnerList').innerHTML = '<div class="empty-state">Caricamento…</div>';
 
   await loadData();
+  await loadNotes();
 
   // Navigation
   document.getElementById('btnPrevDay').addEventListener('click', () => {
@@ -840,6 +925,28 @@ async function init() {
   document.getElementById('btnIncChildren').addEventListener('click', () => { syncChildren(); if (s.children < 99) { s.children++; document.getElementById('stepChildren').value = s.children; } });
   document.getElementById('stepAdults').addEventListener('change', syncAdults);
   document.getElementById('stepChildren').addEventListener('change', syncChildren);
+
+  document.getElementById('noteSectionBox').addEventListener('click', openNoteModal);
+  document.getElementById('btnCloseNote').addEventListener('click', closeNoteModal);
+  document.getElementById('noteOverlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('noteOverlay')) closeNoteModal();
+  });
+  document.getElementById('btnSaveNote').addEventListener('click', async () => {
+    const testo = document.getElementById('noteTextarea').value;
+    await saveNote(s.viewDate, testo);
+    renderNotePreview();
+    closeNoteModal();
+  });
+
+  document.getElementById('lunchToggleBtn').addEventListener('click', () => {
+    setLunchOverride(s.viewDate, true);
+    renderHome();
+  });
+
+  document.getElementById('lunchDeactivateBtn').addEventListener('click', () => {
+    setLunchOverride(s.viewDate, false);
+    renderHome();
+  });
 
   document.getElementById('formDate').addEventListener('change', updateDateDay);
   document.getElementById('reservationForm').addEventListener('submit', handleSubmit);

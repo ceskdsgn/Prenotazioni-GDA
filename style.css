@@ -335,6 +335,94 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
 /* ============================================================
    SERVICE SECTIONS
 ============================================================ */
+.lunch-toggle-btn {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1A7A32;
+  background: rgba(26,122,50,0.13);
+  border: none;
+  border-radius: 20px;
+  padding: 5px 14px;
+  cursor: pointer;
+  transition: opacity .14s;
+  flex-shrink: 0;
+}
+.lunch-toggle-btn.hidden { display: none; }
+.lunch-toggle-btn:not(.hidden) { animation: slide-from-left .35s cubic-bezier(.22,.68,0,1.2) both; }
+
+@keyframes slide-from-left {
+  from { transform: translateX(-60px); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+
+.lunch-deactivate-btn {
+  font-size: 13px;
+  font-weight: 700;
+  color: #FF3B30;
+  background: rgba(255,59,48,0.10);
+  border: none;
+  border-radius: 20px;
+  padding: 5px 14px;
+  cursor: pointer;
+  transition: opacity .14s;
+  flex-shrink: 0;
+}
+.lunch-deactivate-btn.hidden { display: none; }
+.lunch-deactivate-btn:not(.hidden) { animation: slide-from-right .35s cubic-bezier(.22,.68,0,1.2) both; }
+.lunch-deactivate-btn:active { opacity: 0.7; }
+
+@keyframes slide-from-right {
+  from { transform: translateX(60px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+.lunch-toggle-btn:active { opacity: 0.7; }
+
+.service-section.lunch-closed { border-radius: var(--r-l); overflow: hidden; }
+
+.note-section { margin: 16px 16px 24px; cursor: pointer; transition: opacity .14s; }
+.note-section:active { opacity: 0.75; }
+
+.note-hdr { background: rgba(255,149,0,0.07); }
+
+.note-hdr .service-name { color: #C65F00; }
+
+.note-preview {
+  padding: 10px 16px 14px;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.note-preview.note-empty { color: var(--text-3); font-style: italic; }
+
+.note-modal-body {
+  padding: 16px 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.note-textarea {
+  width: 100%;
+  min-height: 220px;
+  border: 0.5px solid var(--sep-strong);
+  border-radius: var(--r-m);
+  background: var(--surface-2);
+  padding: 12px 14px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--text);
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+  line-height: 1.6;
+}
+.note-textarea:focus { border-color: #FF9500; box-shadow: 0 0 0 3px rgba(255,149,0,0.15); }
+
+.note-save-btn { background: #FF9500 !important; box-shadow: 0 2px 8px rgba(255,149,0,0.35) !important; }
+
 .service-divider {
   height: 1.5px;
   background: #000;
@@ -1177,15 +1265,36 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   #app { max-width: 100%; }
 
   /* HOME: header e navigator full width con max leggibile */
-  #viewHome .sticky-top { max-width: 1200px; margin: 0 auto; width: 100%; }
+  #viewHome .sticky-top { width: 100%; }
+
+  /* Day navigator: centrato, Giorno | stanghetta | Data in riga */
+  .day-navigator { padding: 18px 28px 20px; }
+  .day-display {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+  .day-label { font-size: 38px; letter-spacing: -1px; }
+  .day-date-wrap {
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+  }
+  .day-separator {
+    width: 2px;
+    height: 44px;
+    margin: 0 20px;
+    border-radius: 2px;
+  }
+  .day-date-sub { font-size: 34px; letter-spacing: -1px; }
+
 
   /* Pranzo e Cena affiancati */
   .services-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 0 24px;
-    max-width: 1200px;
-    margin: 0 auto;
     padding: 0 24px 32px;
     align-items: start;
   }

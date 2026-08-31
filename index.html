@@ -53,8 +53,10 @@
               <div class="service-hdr-left">
                 <span class="service-emoji">☀️</span>
                 <span class="service-name">Pranzo</span>
+                <button class="lunch-deactivate-btn hidden" id="lunchDeactivateBtn">Disattiva</button>
               </div>
               <span class="service-chip" id="lunchChip">0 coperti</span>
+              <button class="lunch-toggle-btn" id="lunchToggleBtn">Attiva</button>
             </div>
             <div class="reservations-list" id="lunchList"></div>
             <button class="add-res-btn add-lunch" data-service="lunch">
@@ -78,6 +80,17 @@
               <span class="add-plus">＋</span> Aggiungi prenotazione
             </button>
           </div>
+          <!-- Note giornaliere -->
+          <div class="service-section note-section" id="noteSectionBox">
+            <div class="service-hdr note-hdr">
+              <div class="service-hdr-left">
+                <span class="service-emoji">📝</span>
+                <span class="service-name">Note</span>
+              </div>
+            </div>
+            <div class="note-preview" id="notePreview">Nessuna nota per oggi</div>
+          </div>
+
         </div>
 
       </section>
@@ -223,6 +236,23 @@
           <button type="submit" class="btn-save" id="btnSaveRes">Salva prenotazione</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- NOTE MODAL -->
+  <div class="modal-overlay hidden" id="noteOverlay">
+    <div class="modal-sheet" id="noteSheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-hdr">
+        <h2 class="sheet-title" id="noteTitleLabel">Note</h2>
+        <button class="sheet-close-btn" id="btnCloseNote" aria-label="Chiudi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="note-modal-body">
+        <textarea class="note-textarea" id="noteTextarea" placeholder="Scrivi qui note, impegni, promemoria…"></textarea>
+        <button class="btn-save note-save-btn" id="btnSaveNote">Salva nota</button>
+      </div>
     </div>
   </div>
 
