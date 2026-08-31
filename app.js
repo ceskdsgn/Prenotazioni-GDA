@@ -706,6 +706,7 @@ function applyVoiceResult(parsed) {
   document.getElementById('stepChildren').value = s.children;
   document.getElementById('btnDeleteRes').classList.add('hidden');
   setSvc(s.service);
+  updateDateDay();
   showModal();
 }
 
