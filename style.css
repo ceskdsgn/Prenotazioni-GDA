@@ -787,12 +787,12 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: var(--text-2);
+  color: var(--text);
   transition: opacity .14s;
 }
 
 .sheet-close-btn:active { opacity: 0.5; }
-.sheet-close-btn svg { width: 13px; height: 13px; }
+.sheet-close-btn svg { width: 17px; height: 17px; stroke-width: 2.5; }
 
 /* ============================================================
    FORM
@@ -804,9 +804,18 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   gap: 16px;
 }
 
-.field-row { display: flex; gap: 12px; }
+.field-row { display: flex; gap: 12px; align-items: stretch; }
 .field-group { display: flex; flex-direction: column; gap: 6px; }
 .field-group.half { flex: 1; min-width: 0; }
+
+.date-day-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-2);
+  margin-top: 2px;
+  letter-spacing: -0.1px;
+  min-height: 14px;
+}
 
 .field-lbl {
   font-size: 12px;
@@ -858,6 +867,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   border-radius: var(--r-m);
   padding: 3px;
   gap: 3px;
+  flex: 1;
 }
 
 .svc-btn {
@@ -894,11 +904,11 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
 }
 
 .step-btn {
-  width: 52px;
-  height: 50px;
+  width: 60px;
+  height: 58px;
   border: none;
   background: transparent;
-  font-size: 22px;
+  font-size: 30px;
   font-weight: 300;
   color: var(--primary);
   cursor: pointer;
@@ -917,20 +927,28 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 6px;
   border-left: 0.5px solid var(--sep);
   border-right: 0.5px solid var(--sep);
-  height: 50px;
+  height: 58px;
 }
 
-.step-val {
-  font-size: 22px;
+.step-input {
+  font-size: 28px;
   font-weight: 600;
   color: var(--text);
-  letter-spacing: -0.4px;
+  letter-spacing: -0.5px;
+  border: none;
+  background: transparent;
+  width: 52px;
+  text-align: center;
+  outline: none;
+  -moz-appearance: textfield;
 }
+.step-input::-webkit-outer-spin-button,
+.step-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-.step-unit { font-size: 13px; font-weight: 400; color: var(--text-2); }
+.step-unit { font-size: 14px; font-weight: 400; color: var(--text-2); }
 
 /* Actions */
 .sheet-actions {

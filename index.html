@@ -153,6 +153,7 @@
           <div class="field-group half">
             <label class="field-lbl" for="formDate">Data</label>
             <input type="date" class="field-input" id="formDate" required>
+            <span class="date-day-label" id="formDateDay"></span>
           </div>
           <div class="field-group half">
             <label class="field-lbl">Servizio</label>
@@ -175,7 +176,7 @@
           <div class="stepper-wrap">
             <button type="button" class="step-btn" id="btnDecAdults" aria-label="Diminuisci adulti">−</button>
             <div class="step-display">
-              <strong class="step-val" id="stepAdults">2</strong>
+              <input type="number" class="step-input" id="stepAdults" value="2" min="0" max="99" inputmode="numeric">
               <span class="step-unit">adulti</span>
             </div>
             <button type="button" class="step-btn" id="btnIncAdults" aria-label="Aumenta adulti">+</button>
@@ -187,7 +188,7 @@
           <div class="stepper-wrap">
             <button type="button" class="step-btn" id="btnDecChildren" aria-label="Diminuisci bambini">−</button>
             <div class="step-display">
-              <strong class="step-val" id="stepChildren">0</strong>
+              <input type="number" class="step-input" id="stepChildren" value="0" min="0" max="99" inputmode="numeric">
               <span class="step-unit">bambini</span>
             </div>
             <button type="button" class="step-btn" id="btnIncChildren" aria-label="Aumenta bambini">+</button>

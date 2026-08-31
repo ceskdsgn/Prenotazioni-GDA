@@ -10,9 +10,11 @@ const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // ============================================================
 // CONSTANTS
 // ============================================================
-const DAYS_IT   = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
-const MONTHS_IT = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
-                   'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+const DAYS_IT    = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+const DAYS_SHORT = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+const MONTHS_IT  = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
+                    'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+const MONTHS_SHORT = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 
 // ============================================================
 // FESTIVITÀ ITALIANE
@@ -375,10 +377,11 @@ function openAdd(service) {
   document.getElementById('formDate').value          = s.viewDate;
   document.getElementById('formName').value          = '';
   document.getElementById('formNotes').value         = '';
-  document.getElementById('stepAdults').textContent  = '2';
-  document.getElementById('stepChildren').textContent = '0';
+  document.getElementById('stepAdults').value  = '2';
+  document.getElementById('stepChildren').value = '0';
   document.getElementById('btnDeleteRes').classList.add('hidden');
   setSvc(service);
+  updateDateDay();
   showModal();
 }
 
@@ -396,11 +399,20 @@ function openEdit(id) {
   document.getElementById('formDate').value           = r.date;
   document.getElementById('formName').value           = r.name;
   document.getElementById('formNotes').value          = r.notes || '';
-  document.getElementById('stepAdults').textContent   = s.adults;
-  document.getElementById('stepChildren').textContent = s.children;
+  document.getElementById('stepAdults').value   = s.adults;
+  document.getElementById('stepChildren').value = s.children;
   document.getElementById('btnDeleteRes').classList.remove('hidden');
   setSvc(r.service);
+  updateDateDay();
   showModal();
+}
+
+function updateDateDay() {
+  const val = document.getElementById('formDate').value;
+  const el  = document.getElementById('formDateDay');
+  if (!val) { el.textContent = ''; return; }
+  const d = fromDateStr(val);
+  el.textContent = `${DAYS_SHORT[d.getDay()]} · ${d.getDate()} ${MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 function setSvc(val) {
@@ -412,11 +424,14 @@ function setSvc(val) {
 
 function showModal() {
   document.getElementById('modalOverlay').classList.remove('hidden');
+  document.getElementById('voiceFab').classList.add('hidden');
   setTimeout(() => document.getElementById('formName').focus(), 300);
 }
 
 function hideModal() {
   document.getElementById('modalOverlay').classList.add('hidden');
+  const fab = document.getElementById('voiceFab');
+  if (fab.dataset.voiceEnabled) fab.classList.remove('hidden');
 }
 
 // ============================================================
@@ -460,6 +475,9 @@ async function handleSubmit(e) {
   const date  = document.getElementById('formDate').value;
   const name  = document.getElementById('formName').value.trim();
   const notes = document.getElementById('formNotes').value.trim();
+
+  s.adults   = Math.min(99, Math.max(0, parseInt(document.getElementById('stepAdults').value)   || 0));
+  s.children = Math.min(99, Math.max(0, parseInt(document.getElementById('stepChildren').value) || 0));
 
   if (!date || !name) return;
   if (s.adults < 1) { showError('Inserisci almeno 1 adulto.'); return; }
@@ -627,12 +645,16 @@ function parseVoiceText(raw) {
   // NOME FALLBACK: se non trovato con keyword, cerca testo tra servizio/data e i numeri/note
   if (!result.name) {
     // Rimuovi dal testo normalizzato tutto ciò che è già noto
-    let leftover = norm
-      .replace(/\bprenotazione\b/g, '')
-      .replace(/\boggi\b|\bdomani\b/g, '')
-      .replace(/\b(luned[iì]|marted[iì]|mercoled[iì]|gioved[iì]|venerd[iì]|sabato|domenica)\b/g, '')
-      .replace(new RegExp(`\\b(${Object.keys(MONTHS_MAP).join('|')})\\b`, 'g'), '')
-      .replace(/\b(pranzo|cena|a pranzo|a cena)\b/g, '')
+    const stripWords = (str, words) =>
+      words.reduce((s, w) => s.replace(new RegExp(`(^|\\s)${w}(\\s|$)`, 'gi'), ' '), str);
+
+    let leftover = norm;
+    leftover = stripWords(leftover, [
+      'prenotazione','oggi','domani',
+      'luned[iì]','marted[iì]','mercoled[iì]','gioved[iì]','venerd[iì]','sabato','domenica',
+      ...Object.keys(MONTHS_MAP),
+      'pranzo','cena','a pranzo','a cena'
+    ])
       .replace(/\d+\s+ADULTI/g, '')
       .replace(/\d+\s+BAMBINI/g, '')
       .replace(/(\w+)\s+ADULTI/g, '')
@@ -679,8 +701,8 @@ function applyVoiceResult(parsed) {
   document.getElementById('formDate').value           = parsed.date || s.viewDate;
   document.getElementById('formName').value           = parsed.name || '';
   document.getElementById('formNotes').value          = parsed.notes || '';
-  document.getElementById('stepAdults').textContent   = s.adults;
-  document.getElementById('stepChildren').textContent = s.children;
+  document.getElementById('stepAdults').value   = s.adults;
+  document.getElementById('stepChildren').value = s.children;
   document.getElementById('btnDeleteRes').classList.add('hidden');
   setSvc(s.service);
   showModal();
@@ -692,9 +714,10 @@ function initVoice() {
   const toast     = document.getElementById('voiceToast');
   const toastText = document.getElementById('voiceToastText');
 
-  if (!SpeechRecognition) { fab.classList.add('hidden'); return; }
+  if (!SpeechRecognition) return; // resta hidden
 
   fab.classList.remove('hidden');
+  fab.dataset.voiceEnabled = '1';
 
   const recognition = new SpeechRecognition();
   recognition.lang = 'it-IT';
@@ -806,19 +829,17 @@ async function init() {
     btn.addEventListener('click', () => setSvc(btn.dataset.value));
   });
 
-  document.getElementById('btnDecAdults').addEventListener('click', () => {
-    if (s.adults > 0) { s.adults--; document.getElementById('stepAdults').textContent = s.adults; }
-  });
-  document.getElementById('btnIncAdults').addEventListener('click', () => {
-    if (s.adults < 99) { s.adults++; document.getElementById('stepAdults').textContent = s.adults; }
-  });
-  document.getElementById('btnDecChildren').addEventListener('click', () => {
-    if (s.children > 0) { s.children--; document.getElementById('stepChildren').textContent = s.children; }
-  });
-  document.getElementById('btnIncChildren').addEventListener('click', () => {
-    if (s.children < 99) { s.children++; document.getElementById('stepChildren').textContent = s.children; }
-  });
+  const syncAdults   = () => { s.adults   = Math.min(99, Math.max(0, parseInt(document.getElementById('stepAdults').value)   || 0)); document.getElementById('stepAdults').value   = s.adults; };
+  const syncChildren = () => { s.children = Math.min(99, Math.max(0, parseInt(document.getElementById('stepChildren').value) || 0)); document.getElementById('stepChildren').value = s.children; };
 
+  document.getElementById('btnDecAdults').addEventListener('click', () => { syncAdults(); if (s.adults > 0) { s.adults--; document.getElementById('stepAdults').value = s.adults; } });
+  document.getElementById('btnIncAdults').addEventListener('click', () => { syncAdults(); if (s.adults < 99) { s.adults++; document.getElementById('stepAdults').value = s.adults; } });
+  document.getElementById('btnDecChildren').addEventListener('click', () => { syncChildren(); if (s.children > 0) { s.children--; document.getElementById('stepChildren').value = s.children; } });
+  document.getElementById('btnIncChildren').addEventListener('click', () => { syncChildren(); if (s.children < 99) { s.children++; document.getElementById('stepChildren').value = s.children; } });
+  document.getElementById('stepAdults').addEventListener('change', syncAdults);
+  document.getElementById('stepChildren').addEventListener('change', syncChildren);
+
+  document.getElementById('formDate').addEventListener('change', updateDateDay);
   document.getElementById('reservationForm').addEventListener('submit', handleSubmit);
   document.getElementById('btnCloseModal').addEventListener('click', hideModal);
   document.getElementById('btnDeleteRes').addEventListener('click', handleDelete);
