@@ -1172,3 +1172,39 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   .sheet-form { padding: 20px 24px 4px; }
   .sheet-hdr { padding: 12px 24px 16px; }
 }
+
+@media (min-width: 900px) {
+  #app { max-width: 100%; }
+
+  /* HOME: header e navigator full width con max leggibile */
+  #viewHome .sticky-top { max-width: 1200px; margin: 0 auto; width: 100%; }
+
+  /* Pranzo e Cena affiancati */
+  .services-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px 32px;
+    align-items: start;
+  }
+  .service-section { margin: 16px 0 0; }
+  .service-divider { display: none; }
+
+  /* Calendario più grande */
+  .cal-wrap { max-width: 900px; margin: 0 auto; padding: 24px 40px 48px; }
+  .cal-grid { gap: 10px 6px; }
+  .cal-num { font-size: 20px; width: 42px; height: 42px; }
+  .cal-cell.is-today .cal-num { width: 42px; height: 42px; }
+  .cal-weekdays span { font-size: 15px; }
+  .cal-dot { width: 12px; height: 12px; }
+  .cal-dots { height: 14px; gap: 5px; }
+
+  /* Bottom nav più larga */
+  .bottom-nav { max-width: 100%; }
+
+  /* Modal centrato */
+  .modal-sheet { max-width: 560px; border-radius: var(--r-xxl); margin-bottom: 40px; }
+  .modal-overlay { align-items: center; }
+}

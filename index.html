@@ -46,36 +46,38 @@
           </div>
         </div>
 
-        <!-- Pranzo -->
-        <div class="service-section">
-          <div class="service-hdr lunch-hdr">
-            <div class="service-hdr-left">
-              <span class="service-emoji">☀️</span>
-              <span class="service-name">Pranzo</span>
+        <div class="services-grid">
+          <!-- Pranzo -->
+          <div class="service-section">
+            <div class="service-hdr lunch-hdr">
+              <div class="service-hdr-left">
+                <span class="service-emoji">☀️</span>
+                <span class="service-name">Pranzo</span>
+              </div>
+              <span class="service-chip" id="lunchChip">0 coperti</span>
             </div>
-            <span class="service-chip" id="lunchChip">0 coperti</span>
+            <div class="reservations-list" id="lunchList"></div>
+            <button class="add-res-btn add-lunch" data-service="lunch">
+              <span class="add-plus">＋</span> Aggiungi prenotazione
+            </button>
           </div>
-          <div class="reservations-list" id="lunchList"></div>
-          <button class="add-res-btn add-lunch" data-service="lunch">
-            <span class="add-plus">＋</span> Aggiungi prenotazione
-          </button>
-        </div>
 
-        <div class="service-divider"></div>
+          <div class="service-divider"></div>
 
-        <!-- Cena -->
-        <div class="service-section" style="margin-bottom:24px">
-          <div class="service-hdr dinner-hdr">
-            <div class="service-hdr-left">
-              <span class="service-emoji">🌙</span>
-              <span class="service-name">Cena</span>
+          <!-- Cena -->
+          <div class="service-section" style="margin-bottom:24px">
+            <div class="service-hdr dinner-hdr">
+              <div class="service-hdr-left">
+                <span class="service-emoji">🌙</span>
+                <span class="service-name">Cena</span>
+              </div>
+              <span class="service-chip" id="dinnerChip">0 coperti</span>
             </div>
-            <span class="service-chip" id="dinnerChip">0 coperti</span>
+            <div class="reservations-list" id="dinnerList"></div>
+            <button class="add-res-btn add-dinner" data-service="dinner">
+              <span class="add-plus">＋</span> Aggiungi prenotazione
+            </button>
           </div>
-          <div class="reservations-list" id="dinnerList"></div>
-          <button class="add-res-btn add-dinner" data-service="dinner">
-            <span class="add-plus">＋</span> Aggiungi prenotazione
-          </button>
         </div>
 
       </section>
