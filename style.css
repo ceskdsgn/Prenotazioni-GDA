@@ -423,12 +423,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
 
 .note-save-btn { background: #FF9500 !important; box-shadow: 0 2px 8px rgba(255,149,0,0.35) !important; }
 
-.service-divider {
-  height: 1.5px;
-  background: #000;
-  margin: 16px 16px 0;
-  border-radius: 1px;
-}
+.service-divider { display: none; }
 
 .service-section {
   margin: 16px 16px 0;
@@ -1299,7 +1294,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
     align-items: start;
   }
   .service-section { margin: 16px 0 0; }
-  .service-divider { display: none; }
+  .service-divider { display: none !important; }
 
   /* Calendario più grande */
   .cal-wrap { max-width: 900px; margin: 0 auto; padding: 24px 40px 48px; }
