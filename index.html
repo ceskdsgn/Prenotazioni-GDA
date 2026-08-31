@@ -152,8 +152,10 @@
         <div class="field-row">
           <div class="field-group half">
             <label class="field-lbl" for="formDate">Data</label>
-            <input type="date" class="field-input" id="formDate" required>
-            <span class="date-day-label" id="formDateDay"></span>
+            <div class="date-picker-wrap">
+              <input type="date" class="field-input date-input-hidden" id="formDate" required>
+              <div class="date-display" id="formDateDisplay">Seleziona data</div>
+            </div>
           </div>
           <div class="field-group half">
             <label class="field-lbl">Servizio</label>

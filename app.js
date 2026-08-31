@@ -409,10 +409,11 @@ function openEdit(id) {
 
 function updateDateDay() {
   const val = document.getElementById('formDate').value;
-  const el  = document.getElementById('formDateDay');
-  if (!val) { el.textContent = ''; return; }
+  const el  = document.getElementById('formDateDisplay');
+  if (!val) { el.textContent = 'Seleziona data'; el.classList.add('placeholder'); return; }
   const d = fromDateStr(val);
   el.textContent = `${DAYS_SHORT[d.getDay()]} · ${d.getDate()} ${MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`;
+  el.classList.remove('placeholder');
 }
 
 function setSvc(val) {
