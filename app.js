@@ -910,7 +910,10 @@ function initVoice() {
 async function init() {
   initTheme();
 
-  // Loading state
+  // Render immediato del giorno prima del fetch (header sempre aggiornato)
+  renderHome();
+
+  // Loading state nelle liste mentre aspettiamo i dati
   document.getElementById('lunchList').innerHTML = '<div class="empty-state">Caricamento…</div>';
   document.getElementById('dinnerList').innerHTML = '<div class="empty-state">Caricamento…</div>';
 

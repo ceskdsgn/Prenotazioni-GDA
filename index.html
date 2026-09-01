@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="icon.png">
   <meta name="apple-mobile-web-app-title" content="Prenotazioni">
   <title>Prenotazioni</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
   <div id="app">
@@ -34,10 +34,10 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
             <div class="day-display">
-              <span class="day-label" id="dayLabel">Sabato</span>
+              <span class="day-label" id="dayLabel"></span>
               <div class="day-date-wrap">
                 <div class="day-separator"></div>
-                <span class="day-date-sub" id="dayDateSub">30 Agosto 2026</span>
+                <span class="day-date-sub" id="dayDateSub"></span>
               </div>
             </div>
             <button class="day-nav-btn" id="btnNextDay" aria-label="Giorno successivo">
@@ -284,6 +284,16 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="app.js"></script>
+  <script>
+    // Popola subito giorno e data con i valori corretti, prima del caricamento di app.js
+    (function() {
+      const DAYS_IT   = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+      const MONTHS_IT = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+      const now = new Date();
+      document.getElementById('dayLabel').textContent   = DAYS_IT[now.getDay()];
+      document.getElementById('dayDateSub').textContent = now.getDate() + ' ' + MONTHS_IT[now.getMonth()] + ' ' + now.getFullYear();
+    })();
+  </script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
