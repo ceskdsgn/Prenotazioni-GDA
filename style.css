@@ -723,7 +723,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   border-radius: var(--r-m);
   cursor: pointer;
   transition: background .14s;
