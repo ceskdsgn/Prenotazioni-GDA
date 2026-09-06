@@ -254,6 +254,23 @@ function isLunchClosed(dateStr) {
   return isWeekday(dateStr) && !getLunchOverride(dateStr);
 }
 
+function isSunday(dateStr) {
+  return fromDateStr(dateStr).getDay() === 0;
+}
+
+function getDinnerOverride(dateStr) {
+  return localStorage.getItem('dinnerOpen_' + dateStr) === '1';
+}
+
+function setDinnerOverride(dateStr, val) {
+  if (val) localStorage.setItem('dinnerOpen_' + dateStr, '1');
+  else localStorage.removeItem('dinnerOpen_' + dateStr);
+}
+
+function isDinnerClosed(dateStr) {
+  return isSunday(dateStr) && !getDinnerOverride(dateStr);
+}
+
 function renderHome() {
   const date  = s.viewDate;
   const today = todayStr();
@@ -272,6 +289,25 @@ function renderList(service) {
   const items = forDate(date, service);
   const list  = document.getElementById(service === 'lunch' ? 'lunchList' : 'dinnerList');
   const chip  = document.getElementById(service === 'lunch' ? 'lunchChip' : 'dinnerChip');
+
+  // Cena chiusa la domenica
+  if (service === 'dinner') {
+    const section       = document.querySelector('.service-section.dinner-section');
+    const toggleBtn     = document.getElementById('dinnerToggleBtn');
+    const deactivateBtn = document.getElementById('dinnerDeactivateBtn');
+    const chipEl        = document.getElementById('dinnerChip');
+    const addBtn        = document.querySelector('.add-res-btn.add-dinner');
+    const closed        = isDinnerClosed(date);
+    const sunday        = isSunday(date);
+
+    toggleBtn.classList.toggle('hidden', !closed);
+    deactivateBtn.classList.toggle('hidden', !sunday || closed);
+    chipEl.classList.toggle('hidden', closed);
+    list.classList.toggle('hidden', closed);
+    addBtn.classList.toggle('hidden', closed);
+    section.classList.toggle('lunch-closed', closed);
+    if (closed) return;
+  }
 
   // Pranzo chiuso nei giorni feriali
   if (service === 'lunch') {
@@ -301,12 +337,12 @@ function renderList(service) {
       ? 'Nessuna prenotazione a pranzo'
       : 'Nessuna prenotazione a cena';
     list.appendChild(el);
-    chip.innerHTML = '<span class="chip-item">0 coperti</span>';
+    chip.innerHTML = '<span class="chip-item"><b class="chip-num">0</b> cop.</span>';
     return;
   }
 
   const pax = totalPeople(items);
-  chip.innerHTML = `<span class="chip-item">${pax} coperti</span><span class="chip-item">${items.length} ${items.length === 1 ? 'tavolo' : 'tavoli'}</span>`;
+  chip.innerHTML = `<span class="chip-item"><b class="chip-num">${pax}</b> cop.</span><span class="chip-item"><b class="chip-num">${items.length}</b> ${items.length === 1 ? 'tavolo' : 'tavoli'}</span>`;
 
   items.forEach(r => list.appendChild(buildCard(r)));
 }
@@ -430,9 +466,13 @@ function renderCalendar() {
     const isSelected = cellDate === s.viewDate;
     const isClosed  = inMonth && isClosedDay(cellDate);
 
-    const dayRes    = forDate(cellDate, null);
-    const hasLunch  = dayRes.some(r => r.service === 'lunch');
-    const hasDinner = dayRes.some(r => r.service === 'dinner');
+    const dayRes     = forDate(cellDate, null);
+    const lunchRes   = dayRes.filter(r => r.service === 'lunch');
+    const dinnerRes  = dayRes.filter(r => r.service === 'dinner');
+    const hasLunch   = lunchRes.length > 0;
+    const hasDinner  = dinnerRes.length > 0;
+    const lunchPax   = totalPeople(lunchRes);
+    const dinnerPax  = totalPeople(dinnerRes);
 
     const cell = document.createElement('div');
     cell.className = [
@@ -446,8 +486,8 @@ function renderCalendar() {
     cell.innerHTML = `
       <span class="cal-num">${day}</span>
       <div class="cal-dots">
-        ${hasLunch  ? '<span class="cal-dot lunch-dot"></span>'  : ''}
-        ${hasDinner ? '<span class="cal-dot dinner-dot"></span>' : ''}
+        ${hasLunch  ? `<span class="cal-pax lunch-pax">${lunchPax}</span>`  : ''}
+        ${hasDinner ? `<span class="cal-pax dinner-pax">${dinnerPax}</span>` : ''}
       </div>
     `;
 
@@ -989,6 +1029,16 @@ async function init() {
 
   document.getElementById('lunchDeactivateBtn').addEventListener('click', () => {
     setLunchOverride(s.viewDate, false);
+    renderHome();
+  });
+
+  document.getElementById('dinnerToggleBtn').addEventListener('click', () => {
+    setDinnerOverride(s.viewDate, true);
+    renderHome();
+  });
+
+  document.getElementById('dinnerDeactivateBtn').addEventListener('click', () => {
+    setDinnerOverride(s.viewDate, false);
     renderHome();
   });
 
