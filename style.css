@@ -765,7 +765,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   flex-shrink: 0;
 }
 
-.cal-dots { display: flex; gap: 3px; height: 14px; align-items: center; justify-content: center; }
+.cal-dots { display: flex; flex-direction: column; gap: 2px; align-items: center; justify-content: center; }
 
 .cal-pax {
   font-size: 13px;
@@ -1340,7 +1340,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   .cal-num { font-size: 20px; width: 42px; height: 42px; }
   .cal-cell.is-today .cal-num { width: 42px; height: 42px; }
   .cal-weekdays span { font-size: 15px; }
-  .cal-dots { height: 18px; gap: 4px; }
+  .cal-dots { gap: 3px; }
   .cal-pax { font-size: 14px; }
 
   /* Bottom nav più larga */
