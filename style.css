@@ -492,7 +492,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   letter-spacing: -0.1px;
   white-space: nowrap;
 }
-.chip-num { font-size: 16px; font-weight: 800; }
+.chip-num { font-size: 18px; font-weight: 900; }
 
 .lunch-hdr .chip-item {
   color: #1A7A32;
