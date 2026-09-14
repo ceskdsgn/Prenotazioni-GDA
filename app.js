@@ -277,7 +277,7 @@ function renderHome() {
 
   document.getElementById('dayLabel').textContent   = fmtDayLabel(date);
   document.getElementById('dayDateSub').textContent = fmtDateLong(date);
-  document.getElementById('btnGoToday').classList.toggle('hidden', date !== today);
+  document.getElementById('btnGoToday')?.classList.toggle('hidden', date !== today);
 
   renderList('lunch');
   renderList('dinner');
@@ -969,7 +969,7 @@ async function init() {
     s.viewDate = shiftDate(s.viewDate, 1);
     renderHome();
   });
-  document.getElementById('btnGoToday').addEventListener('click', () => {
+  document.getElementById('btnGoToday')?.addEventListener('click', () => {
     s.viewDate = todayStr();
     renderHome();
   });
