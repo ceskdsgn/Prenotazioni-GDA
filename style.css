@@ -831,7 +831,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-3);
+  color: #6C6C70;
   padding: 8px 0 28px;
   letter-spacing: 0.1px;
   transition: color .15s var(--ease);
