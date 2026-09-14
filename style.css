@@ -716,7 +716,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
 .cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 14px 4px;
+  gap: 22px 4px;
 }
 
 .cal-cell {
@@ -1336,7 +1336,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
 
   /* Calendario più grande */
   .cal-wrap { max-width: 900px; margin: 0 auto; padding: 24px 40px 48px; }
-  .cal-grid { gap: 10px 6px; }
+  .cal-grid { gap: 20px 6px; }
   .cal-num { font-size: 20px; width: 42px; height: 42px; }
   .cal-cell.is-today .cal-num { width: 42px; height: 42px; }
   .cal-weekdays span { font-size: 15px; }
