@@ -123,6 +123,68 @@
 
       </section>
 
+      <!-- ===== RENDIMENTO VIEW ===== -->
+      <section class="view" id="viewRendimento">
+        <header class="app-header">
+          <div class="header-left">
+            <p class="app-eyebrow">Statistiche</p>
+            <h1 class="app-title">Rendimento</h1>
+          </div>
+        </header>
+
+        <div class="rend-periodo">
+          <button class="rend-periodo-btn active" data-period="week">Settimana</button>
+          <button class="rend-periodo-btn" data-period="month">Mese</button>
+          <button class="rend-periodo-btn" data-period="quarter">Trimestre</button>
+        </div>
+
+        <div class="rend-scroll">
+          <!-- KPI Tiles -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <span class="kpi-label">Coperti totali</span>
+              <span class="kpi-value" id="kpiTotalCovers">—</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Media / giorno</span>
+              <span class="kpi-value" id="kpiAvgPerDay">—</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Prenotazioni</span>
+              <span class="kpi-value" id="kpiTotalRes">—</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Pax medio</span>
+              <span class="kpi-value" id="kpiAvgParty">—</span>
+            </div>
+          </div>
+
+          <!-- Trend coperti -->
+          <div class="chart-card">
+            <h3 class="chart-title">Coperti per giorno</h3>
+            <div class="chart-wrap"><canvas id="chartTrend"></canvas></div>
+          </div>
+
+          <!-- Pranzo vs Cena + Giorno settimana -->
+          <div class="chart-row-2">
+            <div class="chart-card">
+              <h3 class="chart-title">Pranzo vs Cena</h3>
+              <div class="chart-wrap chart-wrap-sm"><canvas id="chartDonut"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <h3 class="chart-title">Per giorno</h3>
+              <div class="chart-wrap chart-wrap-sm"><canvas id="chartWeekday"></canvas></div>
+            </div>
+          </div>
+
+          <!-- Giorno migliore / peggiore -->
+          <div class="chart-card">
+            <h3 class="chart-title">Distribuzione oraria</h3>
+            <div class="rend-best-wrap" id="rendBestWrap"></div>
+          </div>
+        </div>
+      </section>
+
     </div>
 
     <!-- BOTTOM NAV -->
@@ -142,6 +204,14 @@
           <line x1="3" y1="10" x2="21" y2="10"/>
         </svg>
         <span>Calendario</span>
+      </button>
+      <button class="nav-item" data-view="rendimento">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"/>
+          <line x1="12" y1="20" x2="12" y2="4"/>
+          <line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+        <span>Rendimento</span>
       </button>
     </nav>
 
@@ -278,6 +348,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
   <script>
     // Popola subito giorno e data con i valori corretti, prima del caricamento di app.js
     (function() {

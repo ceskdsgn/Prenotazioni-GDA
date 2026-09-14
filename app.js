@@ -521,6 +521,10 @@ function switchView(name) {
     document.getElementById('viewHome').classList.add('active');
     document.querySelector('[data-view="home"]').classList.add('active');
     renderHome();
+  } else if (name === 'rendimento') {
+    document.getElementById('viewRendimento').classList.add('active');
+    document.querySelector('[data-view="rendimento"]').classList.add('active');
+    renderRendimento();
   } else {
     const d = fromDateStr(s.viewDate);
     s.calYear  = d.getFullYear();
@@ -950,6 +954,201 @@ function initVoice() {
 // ============================================================
 // INIT
 // ============================================================
+// ============================================================
+// RENDIMENTO
+// ============================================================
+let rendPeriod = 'week';
+let chartTrend = null, chartDonut = null, chartWeekday = null;
+
+const CHART_GREEN  = '#1A7A32';
+const CHART_BLUE   = '#0055CC';
+const CHART_GREEN2 = 'rgba(26,122,50,0.15)';
+const CHART_BLUE2  = 'rgba(0,85,204,0.15)';
+
+function rendPeriodDates() {
+  const today = new Date();
+  let start, end, days;
+
+  if (rendPeriod === 'week') {
+    // Settimana corrente: lunedì → domenica
+    const dow = today.getDay() === 0 ? 6 : today.getDay() - 1; // lun=0
+    start = new Date(today); start.setDate(today.getDate() - dow);
+    end   = new Date(start); end.setDate(start.getDate() + 6);
+    days  = 7;
+  } else if (rendPeriod === 'month') {
+    // Mese corrente: 1° → ultimo giorno
+    start = new Date(today.getFullYear(), today.getMonth(), 1);
+    end   = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    days  = end.getDate();
+  } else {
+    // Trimestre corrente: Q1/Q2/Q3/Q4
+    const q = Math.floor(today.getMonth() / 3);
+    start = new Date(today.getFullYear(), q * 3, 1);
+    end   = new Date(today.getFullYear(), q * 3 + 3, 0);
+    days  = Math.round((end - start) / 86400000) + 1;
+  }
+
+  return { start: toDateStr(start), end: toDateStr(end), days };
+}
+
+function rendFilterRes() {
+  const { start, end } = rendPeriodDates();
+  return reservations.filter(r => r.date >= start && r.date <= end);
+}
+
+function renderRendimento() {
+  const res = rendFilterRes();
+  const { start, end, days } = rendPeriodDates();
+
+  // --- KPI ---
+  const totalCovers = res.reduce((n, r) => n + (r.adults || 0) + (r.children || 0), 0);
+  const avgPerDay   = days > 0 ? (totalCovers / days).toFixed(1) : '—';
+  const avgParty    = res.length ? (totalCovers / res.length).toFixed(1) : '—';
+
+  document.getElementById('kpiTotalCovers').textContent = totalCovers;
+  document.getElementById('kpiAvgPerDay').textContent   = avgPerDay;
+  document.getElementById('kpiTotalRes').textContent    = res.length;
+  document.getElementById('kpiAvgParty').textContent    = avgParty;
+
+  // --- Trend: coperti per giorno (settimana/mese) o per settimana (trimestre) ---
+  const dateLabels = [];
+  const lunchData  = [];
+  const dinnerData = [];
+
+  const startD = fromDateStr(start);
+  const endD   = fromDateStr(end);
+
+  if (rendPeriod === 'week') {
+    // 7 barre: un giorno per barra
+    for (let d = new Date(startD); d <= endD; d.setDate(d.getDate() + 1)) {
+      const ds  = toDateStr(d);
+      const lbl = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'][d.getDay()] + ' ' + d.getDate();
+      dateLabels.push(lbl);
+      const dayRes = res.filter(r => r.date === ds);
+      lunchData.push( dayRes.filter(r => r.service === 'lunch').reduce((n,r) => n+(r.adults||0)+(r.children||0), 0) );
+      dinnerData.push( dayRes.filter(r => r.service === 'dinner').reduce((n,r) => n+(r.adults||0)+(r.children||0), 0) );
+    }
+  } else if (rendPeriod === 'month') {
+    // ~4-5 barre: raggruppate per settimana del mese
+    let cursor = new Date(startD);
+    let weekNum = 1;
+    while (cursor <= endD) {
+      const ws = toDateStr(cursor);
+      const we_d = new Date(cursor); we_d.setDate(cursor.getDate() + 6);
+      const we = toDateStr(we_d > endD ? endD : we_d);
+      dateLabels.push('Sett. ' + weekNum++);
+      const weekRes = res.filter(r => r.date >= ws && r.date <= we);
+      lunchData.push( weekRes.filter(r => r.service === 'lunch').reduce((n,r) => n+(r.adults||0)+(r.children||0), 0) );
+      dinnerData.push( weekRes.filter(r => r.service === 'dinner').reduce((n,r) => n+(r.adults||0)+(r.children||0), 0) );
+      cursor.setDate(cursor.getDate() + 7);
+    }
+  } else {
+    // 3 barre: un mese per barra
+    const MONTHS_SHORT = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+    const q = Math.floor(startD.getMonth() / 3);
+    for (let m = q * 3; m < q * 3 + 3; m++) {
+      const ms = toDateStr(new Date(startD.getFullYear(), m, 1));
+      const me = toDateStr(new Date(startD.getFullYear(), m + 1, 0));
+      dateLabels.push(MONTHS_SHORT[m]);
+      const mRes = res.filter(r => r.date >= ms && r.date <= me);
+      lunchData.push( mRes.filter(r => r.service === 'lunch').reduce((n,r) => n+(r.adults||0)+(r.children||0), 0) );
+      dinnerData.push( mRes.filter(r => r.service === 'dinner').reduce((n,r) => n+(r.adults||0)+(r.children||0), 0) );
+    }
+  }
+
+  if (chartTrend) chartTrend.destroy();
+  chartTrend = new Chart(document.getElementById('chartTrend'), {
+    type: 'bar',
+    data: {
+      labels: dateLabels,
+      datasets: [
+        { label: 'Pranzo', data: lunchData,  backgroundColor: CHART_GREEN, borderRadius: 4, borderSkipped: false },
+        { label: 'Cena',   data: dinnerData, backgroundColor: CHART_BLUE,  borderRadius: 4, borderSkipped: false },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 12 } } }, tooltip: { mode: 'index' } },
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { font: { size: 11 }, maxRotation: 0 } },
+        y: { stacked: true, beginAtZero: true, grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { font: { size: 11 }, precision: 0 } }
+      }
+    }
+  });
+
+  // --- Donut: pranzo vs cena ---
+  const lunchCovers  = res.filter(r => r.service === 'lunch').reduce((n,r) => n+(r.adults||0)+(r.children||0), 0);
+  const dinnerCovers = res.filter(r => r.service === 'dinner').reduce((n,r) => n+(r.adults||0)+(r.children||0), 0);
+
+  if (chartDonut) chartDonut.destroy();
+  chartDonut = new Chart(document.getElementById('chartDonut'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Pranzo', 'Cena'],
+      datasets: [{ data: [lunchCovers, dinnerCovers], backgroundColor: [CHART_GREEN, CHART_BLUE], borderWidth: 0, hoverOffset: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 12 } } } }
+    }
+  });
+
+  // --- Per giorno della settimana ---
+  const DAYS_SHORT = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
+  const weekdayTotals = [0,0,0,0,0,0,0];
+  const weekdayCounts = [0,0,0,0,0,0,0];
+  res.forEach(r => {
+    const dow = fromDateStr(r.date).getDay(); // 0=dom
+    const idx = dow === 0 ? 6 : dow - 1;     // lun=0 ... dom=6
+    weekdayTotals[idx] += (r.adults||0) + (r.children||0);
+    weekdayCounts[idx]++;
+  });
+  const weekdayAvg = weekdayTotals.map((t, i) => weekdayCounts[i] ? Math.round(t / weekdayCounts[i] * 10) / 10 : 0);
+
+  if (chartWeekday) chartWeekday.destroy();
+  chartWeekday = new Chart(document.getElementById('chartWeekday'), {
+    type: 'bar',
+    data: {
+      labels: DAYS_SHORT,
+      datasets: [{ label: 'Media cop.', data: weekdayAvg, backgroundColor: weekdayAvg.map(v => v === Math.max(...weekdayAvg) ? CHART_BLUE : CHART_BLUE2), borderRadius: 4, borderSkipped: false }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { font: { size: 11 }, precision: 0 } }
+      }
+    }
+  });
+
+  // --- Distribuzione pranzo/cena per giorno della settimana (barre orizzontali) ---
+  const wrap = document.getElementById('rendBestWrap');
+  const maxVal = Math.max(...weekdayTotals, 1);
+  wrap.innerHTML = DAYS_SHORT.map((d, i) => `
+    <div class="rend-best-row">
+      <span class="rend-best-label">${d}</span>
+      <div class="rend-best-bar-wrap">
+        <div class="rend-best-bar" style="width:${(weekdayTotals[i]/maxVal*100).toFixed(1)}%;background:${i === 5 || i === 6 ? CHART_BLUE : CHART_GREEN}"></div>
+      </div>
+      <span class="rend-best-val">${weekdayTotals[i]}</span>
+    </div>
+  `).join('');
+}
+
+function initRendimento() {
+  document.querySelectorAll('.rend-periodo-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.rend-periodo-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      rendPeriod = btn.dataset.period;
+      renderRendimento();
+    });
+  });
+}
+
 async function init() {
   initTheme();
 
@@ -1055,6 +1254,7 @@ async function init() {
 
   initSwipe();
   initVoice();
+  initRendimento();
   initAutoRefresh();
   switchView('home');
 }

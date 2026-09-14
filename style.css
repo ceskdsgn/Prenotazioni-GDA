@@ -1350,3 +1350,152 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
   .modal-sheet { max-width: 560px; border-radius: var(--r-xxl); margin-bottom: 40px; }
   .modal-overlay { align-items: center; }
 }
+
+/* ============================================================
+   RENDIMENTO VIEW
+============================================================ */
+.rend-periodo {
+  display: flex;
+  gap: 0;
+  margin: 16px 16px 0;
+  background: var(--surface-3);
+  border-radius: var(--r-f);
+  padding: 2px;
+}
+
+.rend-periodo-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 0;
+  border-radius: calc(var(--r-f) - 2px);
+  cursor: pointer;
+  transition: background .2s, color .2s;
+}
+
+.rend-periodo-btn.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+}
+
+.rend-scroll {
+  overflow-y: auto;
+  padding-bottom: 32px;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 16px 0;
+}
+
+.kpi-card {
+  background: var(--surface);
+  border-radius: var(--r-l);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 0.5px solid var(--sep);
+  box-shadow: var(--sh-xs);
+}
+
+.kpi-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.kpi-value {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.chart-card {
+  background: var(--surface);
+  border-radius: var(--r-l);
+  padding: 16px;
+  margin: 12px 16px 0;
+  border: 0.5px solid var(--sep);
+  box-shadow: var(--sh-xs);
+}
+
+.chart-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 14px;
+}
+
+.chart-wrap { position: relative; width: 100%; height: 220px; }
+.chart-wrap-sm { height: 200px; }
+
+.chart-row-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin: 12px 16px 0;
+}
+
+.chart-row-2 .chart-card { margin: 0; }
+
+.rend-best-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rend-best-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rend-best-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  width: 36px;
+  flex-shrink: 0;
+}
+
+.rend-best-bar-wrap {
+  flex: 1;
+  height: 8px;
+  background: var(--surface-2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.rend-best-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width .4s ease;
+}
+
+.rend-best-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+@media (min-width: 900px) {
+  .kpi-grid { grid-template-columns: repeat(4, 1fr); margin: 20px 24px 0; }
+  .chart-card { margin-left: 24px; margin-right: 24px; }
+  .chart-row-2 { grid-template-columns: 1fr 1fr; margin-left: 24px; margin-right: 24px; }
+  .chart-wrap-sm { height: 220px; }
+  .rend-periodo { margin: 16px 24px 0; max-width: 360px; }
+}
